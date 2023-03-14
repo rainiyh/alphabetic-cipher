@@ -28,10 +28,21 @@ def decrypt(encrypted_text, code):
 # Send a message from CLI. The script will display it encoded and then decoded.
 def main():
 	text = sys.argv[1]
+
+	print("The plaintext to encode is: ", text)
+
 	code = generate_code()
+
+	print("It will be encoded using the following key:")
+	print(code)
+
 	encrypted_text = encrypt(text, code)
-	print(encrypted_text)	
-	print(decrypt(encrypted_text, code))
+
+	print("The ciphertext is: ", encrypted_text)
+
+	print("It can be decoded using the same key. Here is the decrypted text: ", decrypt(encrypted_text, code))
+
+	# print(decrypt(encrypted_text, code))
 
 if (__name__ == "__main__"):
 	main()
