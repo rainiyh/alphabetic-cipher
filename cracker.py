@@ -1,7 +1,6 @@
 import argparse
 import re
 
-
 def hashWord(word):
 
     #Translates a word into numbers (starting with 0) where each number uniquely represents a letter in the given word
@@ -67,8 +66,8 @@ class wordDict(object):
                 if (cipherWord[i].islower() or cipherWord[i] == "'" or word[i] == "'") and (cipherWord[i] != word[i]):
                     invalid = True
                     break
-                if not invalid:
-                    potentialWords.append(word)
+            if not invalid:
+                potentialWords.append(word)
 
         return potentialWords
 
@@ -120,10 +119,9 @@ class Solver(object):
                 cipherChar = cipherWord[i]
                 plainChar = p[i]
 
-                if (cipherChar not in currTrans and plainChar in translatedPlainChars):
+                if ((cipherChar not in currTrans) and (plainChar in translatedPlainChars)):
                     badTrans = True
                     break
-                
                 newTrans[cipherWord[i]] = p[i]
 
             if badTrans:
@@ -134,12 +132,12 @@ class Solver(object):
             if res:
                 return res
 
-            skipWordSol = self.recursiveSolver(remainWords[1:], currTrans, unkWordCount + 1, maxUnkWordCount)
+        skipWordSol = self.recursiveSolver(remainWords[1:], currTrans, unkWordCount + 1, maxUnkWordCount)
 
-            if skipWordSol:
-                return skipWordSol
+        if skipWordSol:
+            return skipWordSol
 
-            return None
+        return None
 
 
     @staticmethod
@@ -165,7 +163,18 @@ class Solver(object):
         print('Ciphertext:')
         print(self.ciphertext)
         print("Plaintext:")
-        print(plaintext)
+        print(plaintext, '\n')
+
+        print('Substitutions:')
+        items = [key + ' -> ' + word + " |" for key, word
+                 in self.translation.items()]
+        items.sort()
+        i = 0
+        for item in items:
+            print(item + ' ', end='')
+            if i % 5 == 4:
+                print('')
+            i += 1
 
 
 
@@ -179,6 +188,8 @@ def main():
     solver.solve()
 
     solver.printSol()
+
+    print(hashWord("krutarth"))
 
 
 main()
