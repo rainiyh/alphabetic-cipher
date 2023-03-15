@@ -29,18 +29,21 @@ def decrypt(encrypted_text, code):
 def main():
 	text = sys.argv[1]
 
-	print("The plaintext to encode is: ", text)
+	print("The plaintext to encrypt is: ", text)
 
 	code = generate_code()
 
-	print("It will be encoded using the following key:")
-	print(code)
+	print("\nIt will be encrypted using the following key:")
+	print(code, "\n")
 
 	encrypted_text = encrypt(text, code)
 
-	print("The ciphertext is: ", encrypted_text)
+	print("\nThe ciphertext is: ", encrypted_text)
 
-	print("It can be decoded using the same key. Here is the decrypted text: ", decrypt(encrypted_text, code))
+	with open('ciphertext.txt', 'w') as f:
+		print(encrypted_text, file=f)
+
+	print("\nIt can be decrypted using the same key. Here is the decrypted text: ", decrypt(encrypted_text, code))
 
 	# print(decrypt(encrypted_text, code))
 
