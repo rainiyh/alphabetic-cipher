@@ -6947,7 +6947,6 @@ stu
 steer
 ruling
 rogers
-rd
 poisoning
 pirate
 nursing
@@ -15689,7 +15688,6 @@ searches
 scot
 sancho
 safari
-ry
 rochelle
 righteousness
 removal
@@ -32505,7 +32503,6 @@ ricks
 rickles
 rhymed
 rheingold
-rf
 rez
 rewrites
 revolved
@@ -33923,7 +33920,6 @@ walmart
 walling
 waiting's
 waistband
-waht
 wackos
 waa
 vouching

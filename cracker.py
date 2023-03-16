@@ -33,7 +33,7 @@ class wordDict(object):
     #The words in this dictionary come from 'words.txt' which contains a list of 40000+ words
 
     #For example if the key is 012 its values would be words like: cat, bat, hat, mat, pat, rat etc.
-    #In python dictionary notation, it looks like: {'012' : ['bat', 'cat', 'hat', 'mat', 'pat']}
+    #In python dictionary notation, it looks like: {'012' : ['bat', 'cat', 'hat', 'mat', 'pat', 'let']}
 
     #This is eventually used to match the ciphertext hashes to potential words
 
@@ -70,6 +70,7 @@ class wordDict(object):
                 potentialWords.append(word)
 
         return potentialWords
+
 
 class Solver(object):
 
@@ -188,8 +189,6 @@ def main():
     solver.solve()
 
     solver.printSol()
-
-    print(hashWord("krutarth"))
 
 
 main()
