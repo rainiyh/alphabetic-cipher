@@ -1,4 +1,3 @@
-import argparse
 import re
 
 def hashWord(word):
@@ -25,7 +24,6 @@ def hashWord(word):
             count += 1
         out.append(exists[ch])
     return ''.join(out)
-
 
 class wordDict(object):
 
@@ -62,7 +60,7 @@ class wordDict(object):
         for word in matches:
             invalid = False
 
-            for i in range(0, len(word)):
+            for i in range(len(word)):
                 if (cipherWord[i].islower() or cipherWord[i] == "'" or word[i] == "'") and (cipherWord[i] != word[i]):
                     invalid = True
                     break
@@ -74,19 +72,18 @@ class wordDict(object):
 
 class Solver(object):
 
-    def __init__(self, ciphertext, verbose=False):
+    def __init__(self, ciphertext):
 
         self.wordsFile = wordDict()
         self.translation = {}
         self.ciphertext = ciphertext.upper()
-        self.verbose = verbose
 
     def solve(self):
 
         words = re.sub(r'[^\w ]+', '', self.ciphertext).split()
         words.sort(key=lambda word: -len(word))
 
-        for maxUnkWordCount in range(0, max(3, len(words) // 10)):
+        for maxUnkWordCount in range(max(3, len(words) // 10)):
 
             solution = self.recursiveSolver(words, {}, 0, maxUnkWordCount)
 
@@ -97,9 +94,6 @@ class Solver(object):
     def recursiveSolver(self, remainWords, currTrans, unkWordCount, maxUnkWordCount):
 
         trans = self.makeTranslations(currTrans)
-
-        if self.verbose:
-            print(self.ciphertext.translate(trans))
 
         if len(remainWords) == 0:
             return currTrans
@@ -116,7 +110,7 @@ class Solver(object):
             translatedPlainChars = set(currTrans.values())
             badTrans = False
 
-            for i in range(0, len(p)):
+            for i in range(len(p)):
                 cipherChar = cipherWord[i]
                 plainChar = p[i]
 
@@ -167,8 +161,7 @@ class Solver(object):
         print(plaintext, '\n')
 
         print('Substitutions:')
-        items = [key + ' -> ' + word + " |" for key, word
-                 in self.translation.items()]
+        items = [key + ' -> ' + word + " |" for key, word in self.translation.items()]
         items.sort()
         i = 0
         for item in items:
@@ -177,23 +170,12 @@ class Solver(object):
                 print('')
             i += 1
 
-
-
-
 def main():
-
     ciphertext = open('ciphertext.txt').read().strip()
 
     solver = Solver(ciphertext)
-
     solver.solve()
-
     solver.printSol()
 
-
-main()
-
-
-# c = makeTrans2(b)
-
-# print(c)
+if (__name__ == "__main__"):
+	main()
