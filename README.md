@@ -1,6 +1,6 @@
 # alphabetic-cipher
-Software and Computer Security final project
-Current status: Phase II
+Software and Computer Security final project  
+Current status: Phase II  
 Project group: 1
 
 This is a cracker for an alphabetic cipher. Here is one solution, which will be tested against others for performance and accuracy.
