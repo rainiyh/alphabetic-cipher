@@ -1,75 +1,83 @@
 import string
+import random
 import nltk
-import decoder
 from nltk.util import ngrams
 from nltk.corpus import reuters
-from collections import Counter, defaultdict
+from collections import defaultdict, Counter
 import re
 
-def decrypt_caesar_cipher(ciphertext, shift):
+def decrypt_monoalphabetic(ciphertext, key):
+    key_mapping = dict(zip(string.ascii_lowercase, key))
     decrypted_text = ""
     for char in ciphertext:
-        if char.lower() in string.ascii_lowercase:
-            offset = ord('A') if char.isupper() else ord('a')
-            decrypted_char = chr(((ord(char) - offset - shift) % 26) + offset)
-            decrypted_text += decrypted_char
+        if char.lower() in key_mapping:
+            decrypted_char = key_mapping[char.lower()]
+            decrypted_text += decrypted_char.upper() if char.isupper() else decrypted_char
         else:
             decrypted_text += char
     return decrypted_text
 
-# You need to download reuters and punkt once. If you've already run the script without these two lines commented out, comment them out before you run it again.
-def bigram_model():
-    #nltk.download('reuters')
-    #nltk.download('punkt')
+def digraph_model():
     nltk.download('reuters')
-    nltk.download('punkt')
 
     model = defaultdict(lambda: defaultdict(lambda: 0))
-    sentences = reuters.sents()
-    bigrams = []
+    text = reuters.raw()
+    text = re.sub(r"[^a-zA-Z]+", "", text).lower()
+    digraphs = ngrams(text, 2)
 
-    for sentence in sentences:
-        sentence = [word.lower() for word in sentence if word.isalpha()]
-        bigrams.extend(list(ngrams(sentence, 2)))
+    digraph_counts = Counter(digraphs)
+    for digraph, count in digraph_counts.items():
+        model[digraph[0]][digraph[1]] = count
 
-    bigram_counts = Counter(bigrams)
-    for bigram, count in bigram_counts.items():
-        model[bigram[0]][bigram[1]] = count
-
-    for first_word in model:
-        total_count = float(sum(model[first_word].values()))
-        for second_word in model[first_word]:
-            model[first_word][second_word] /= total_count
+    for first_char in model:
+        total_count = float(sum(model[first_char].values()))
+        for second_char in model[first_char]:
+            model[first_char][second_char] /= total_count
 
     return model
 
-def get_text_bigram_score(text, bigram_model):
-    words = nltk.word_tokenize(text.lower())
-    words = [word for word in words if word.isalpha()]
-
-    if len(words) < 2:
+def get_text_digraph_score(text, digraph_model):
+    text = re.sub(r"[^a-zA-Z]+", "", text).lower()
+    if len(text) < 2:
         return float('-inf')
 
-    bigrams = list(ngrams(words, 2))
+    digraphs = ngrams(text, 2)
     score = 0
-    for bigram in bigrams:
-        score += bigram_model[bigram[0]][bigram[1]]
+    for digraph in digraphs:
+        score += digraph_model[digraph[0]][digraph[1]]
 
     return score
 
+def hill_climbing(ciphertext, fitness_fn, iterations=20000):
+    current_key = ''.join(random.sample(string.ascii_lowercase, len(string.ascii_lowercase)))
+    current_score = fitness_fn(current_key)
+    
+    for _ in range(iterations):
+        new_key = swap_two_letters(current_key)
+        new_score = fitness_fn(new_key)
+
+        if new_score > current_score:
+            current_key = new_key
+            current_score = new_score
+
+    return current_key
+
+def swap_two_letters(key):
+    key = list(key)
+    idx1, idx2 = random.sample(range(len(key)), 2)
+    key[idx1], key[idx2] = key[idx2], key[idx1]
+    return ''.join(key)
+
 def frequency_analysis(ciphertext):
-    model = bigram_model()
-    best_score = float('-inf')
-    best_shift = 0
+    model = digraph_model()
 
-    for shift in range(1, 26):
-        plaintext = decrypt_caesar_cipher(ciphertext, shift)
-        score = get_text_bigram_score(plaintext, model)
-        if score > best_score:
-            best_score = score
-            best_shift = shift
+    def fitness_fn(key):
+        plaintext = decrypt_monoalphabetic(ciphertext, key)
+        return get_text_digraph_score(plaintext, model)
 
-    return decrypt_caesar_cipher(ciphertext, best_shift)
+    best_key = hill_climbing(ciphertext, fitness_fn)
+    return decrypt_monoalphabetic(ciphertext, best_key)
+
 if __name__ == "__main__":
     text = open('ciphertext.txt').read().strip()
     text = re.sub(r'[^\w ]+', '', text)
