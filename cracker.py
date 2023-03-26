@@ -1,42 +1,5 @@
 import re
 import decoder
-
-def hashWord(word):
-
-    #Translates a word into numbers (starting with 0) where each number uniquely represents a letter in the given word
-    #For example: ABC would become 012 - 0 was assigned to 'A', 1 to 'B' and 2 to 'C'
-    #Therefore ABCA would become 0120 - since the 'A' at index 0 already exists in the dictionary by the time the program looks at the 'A'
-    #at index 3, the second 'A' is assigned the same number as the previous 'A'
-
-    #some more examples:
-    #ABCD becomes 0123 --- 0 = A | 1 = B | 2 = C | 3 = D
-    
-    #ELEPHANT becomes 01023456 --- 0 = E | 1 = L | 0 = E (again) | 2 = P | 3 = H | 4 = A | 5 = N | 6 = T
-
-    #KRUTARTH becomes 01234135 --- 0 = K | 1 = R | 2 = U | 3 = T | 4 = A | 1 = R (again) | 3 = T (again) | 5 = H
-
-    hashed = {}
-    out = []
-    count = 0
-
-    for char in word:
-        if char not in hashed:
-            hashed[char] = str(count)
-            count += 1
-        out.append(hashed[char])
-    return ''.join(out)
-    
-#This is a helper function to create a python translation mapping table from a dictionary of key-value pairs in order to translate the encrypted wordfr5.
-
-def makeTranslations(translations):
-    fromStr = ''
-    toStr = ''
-
-    for key in translations:
-        fromStr += key
-        toStr += translations[key]
-
-    return str.maketrans(fromStr, toStr)
     
 #Initializes a dictionary where the keys are the hashedWords from the above method and the values are lists containing words that can match that key
 #The words in this dictionary come from 'words.txt' which contains a list of 40000+ words
@@ -57,14 +20,53 @@ def load_hashed_words():
             continue
         hashDict[hashedWord].append(word)
     return hashDict
+
+# Load the cipher text from file, strip out non-alphanumeric characters
         
 def load_ciphertext():
 	text = open('ciphertext.txt').read().strip()
 	text = re.sub(r'[^\w ]+', '', text)
 	return text
-    
-def solve(remainWords, currTrans, unkWordCount, hashDict):
+	
+#Translates a word into numbers (starting with 0) where each number uniquely represents a letter in the given word
+#For example: ABC would become 012 - 0 was assigned to 'A', 1 to 'B' and 2 to 'C'
+#Therefore ABCA would become 0120 - since the 'A' at index 0 already exists in the dictionary by the time the program looks at the 'A'
+#at index 3, the second 'A' is assigned the same number as the previous 'A'
 
+#some more examples:
+#ABCD becomes 0123 --- 0 = A | 1 = B | 2 = C | 3 = D
+    
+#ELEPHANT becomes 01023456 --- 0 = E | 1 = L | 0 = E (again) | 2 = P | 3 = H | 4 = A | 5 = N | 6 = T
+
+#KRUTARTH becomes 01234135 --- 0 = K | 1 = R | 2 = U | 3 = T | 4 = A | 1 = R (again) | 3 = T (again) | 5 = H
+
+def hashWord(word):
+    hashed = {}
+    out = []
+    count = 0
+
+    for char in word:
+        if char not in hashed:
+            hashed[char] = str(count)
+            count += 1
+        out.append(hashed[char])
+    return ''.join(out)
+    
+#This is a helper function to create a python translation mapping table from a dictionary of key-value pairs in order to translate the encrypted word.
+
+def makeTranslations(translations):
+    fromStr = ''
+    toStr = ''
+
+    for key in translations:
+        fromStr += key
+        toStr += translations[key]
+
+    return str.maketrans(fromStr, toStr)
+    
+# The recursive solver algorithm. Documented in the reports.
+
+def solve(remainWords, currTrans, unkWordCount, hashDict):
     trans = makeTranslations(currTrans)
 
     if len(remainWords) == 0:
