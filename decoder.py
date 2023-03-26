@@ -2,6 +2,7 @@ import random
 import cracker
 import string
 import time
+import AI_decode
 from itertools import permutations
 from encoder import Alphabet
 
@@ -14,6 +15,10 @@ def load_words():
 # Performant cracker
 def crack():
 	cracker.main()
+	
+# AI frequency analysis decoder
+def ai_decode():
+	AI_decode.main()
 	
 def generate_random_combination():
 	combination = ''
@@ -55,7 +60,7 @@ def bruteforce():
 	tested = 0
 	start_time = time.time()
 	printed_time = start_time
-	print("Brute forcing. This could take a while.")
+	print("\nBrute forcing. This could take a while.")
 	while True:
 		combination = generate_random_combination()
 		decoded = test_random_combination(encoded, combination)
@@ -83,8 +88,15 @@ def print_solution(ciphertext, plaintext, items):
 
 # Do the decoding here
 def main():
+	print("Running recursive solver algorithm.")
 	start_time = time.time()
 	crack()
+	end_time = time.time()
+	execution_time = end_time - start_time
+	print(f"Execution time: {execution_time} seconds")
+	print("\nRunning AI decoder.")
+	start_time = time.time()
+	ai_decode()
 	end_time = time.time()
 	execution_time = end_time - start_time
 	print(f"Execution time: {execution_time} seconds")
