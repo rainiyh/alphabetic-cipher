@@ -3,6 +3,7 @@ import nltk
 from nltk.util import ngrams
 from nltk.corpus import reuters
 from collections import Counter, defaultdict
+import re
 
 def decrypt_caesar_cipher(ciphertext, shift):
     decrypted_text = ""
@@ -16,8 +17,8 @@ def decrypt_caesar_cipher(ciphertext, shift):
     return decrypted_text
 
 def bigram_model():
-    # nltk.download('reuters')
-    # nltk.download('punkt')
+    nltk.download('reuters')
+    nltk.download('punkt')
 
     model = defaultdict(lambda: defaultdict(lambda: 0))
     sentences = reuters.sents()
@@ -65,9 +66,10 @@ def frequency_analysis(ciphertext):
             best_shift = shift
 
     return decrypt_caesar_cipher(ciphertext, best_shift)
-
 if __name__ == "__main__":
-    ciphertext = "Jr znl or va fgevat naq va gvzr, naq va gur zvfg bs guvatf."
-    print(f"Ciphertext: {ciphertext}")
-    plaintext = frequency_analysis(ciphertext)
-    print(f"Plaintext: {plaintext}")
+    text = open('ciphertext.txt').read().strip()
+    text = re.sub(r'[^\w ]+', '', text)
+    print(f"Ciphertext: {text}")
+    plaintext = frequency_analysis(text)
+    print(f"plaintext: {plaintext}")
+    
