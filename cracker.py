@@ -83,13 +83,10 @@ class Solver(object):
         words = re.sub(r'[^\w ]+', '', self.ciphertext).split()
         words.sort(key=lambda word: -len(word))
 
-        for maxUnkWordCount in range(max(3, len(words) // 10)):
+        solution = self.recursiveSolver(words, {}, 0, 0)
 
-            solution = self.recursiveSolver(words, {}, 0, maxUnkWordCount)
-
-            if solution:
-                self.translation = solution
-                break
+        if solution:
+            self.translation = solution
 
     def recursiveSolver(self, remainWords, currTrans, unkWordCount, maxUnkWordCount):
 
@@ -97,9 +94,6 @@ class Solver(object):
 
         if len(remainWords) == 0:
             return currTrans
-        
-        if unkWordCount > maxUnkWordCount:
-            return None
 
         cipherWord = remainWords[0]
 
@@ -127,17 +121,10 @@ class Solver(object):
             if res:
                 return res
 
-        skipWordSol = self.recursiveSolver(remainWords[1:], currTrans, unkWordCount + 1, maxUnkWordCount)
-
-        if skipWordSol:
-            return skipWordSol
-
         return None
-
 
     @staticmethod
     def makeTranslations(translations):
-
         fromStr = ''
         toStr = ''
 
@@ -148,38 +135,26 @@ class Solver(object):
         return str.maketrans(fromStr, toStr)
 
     def printSol(self):
-
-        if not self.translation:
-            print("Could not translate")
-            return
-        
         plaintext = self.ciphertext.translate(Solver.makeTranslations(self.translation))
-
-        print('Ciphertext:')
-        print(self.ciphertext)
-        print("Plaintext:")
-        print(plaintext, '\n')
-
+        print(f'Ciphertext: {self.ciphertext}')
+        print(f'Plaintext: {plaintext}')
         print('Substitutions:')
-        items = [key + ' -> ' + word + " |" for key, word in self.translation.items()]
+        items = [key + ' -> ' + word for key, word in self.translation.items()]
         items.sort()
-        i = 0
         for item in items:
-            print(item + ' ', end='')
-            if i % 5 == 4:
-                print('')
-            i += 1
-        print('')
+            print(item)
         
 def load_ciphertext():
 	return open('ciphertext.txt').read().strip()
 
 def main():
     ciphertext = load_ciphertext()
-
     solver = Solver(ciphertext)
     solver.solve()
-    solver.printSol()
+    if not solver.translation:
+    	print("Failed to find a solution")
+    else:
+    	solver.printSol()
 
 if (__name__ == "__main__"):
 	main()
