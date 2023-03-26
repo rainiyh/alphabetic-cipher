@@ -1,6 +1,6 @@
 import re
 
-def hashWord(word):
+def codeWord(word):
 
     #Translates a word into numbers (starting with 0) where each number uniquely represents a letter in the given word
     #For example: ABC would become 012 - 0 was assigned to 'A', 1 to 'B' and 2 to 'C'
@@ -42,7 +42,7 @@ class wordDict(object):
         self.hashDict = {}
 
         for word in wordsList:
-            hashedWord = hashWord(word)
+            hashedWord = codeWord(word)
 
             if hashedWord not in self.hashDict:
                 self.hashDict[hashedWord] = [word]
@@ -51,7 +51,7 @@ class wordDict(object):
 
     def findPotentialWords(self, cipherWord):
 
-        hashedCipherWord = hashWord(cipherWord)
+        hashedCipherWord = codeWord(cipherWord)
 
         matches = self.hashDict.get(hashedCipherWord) or [] #if the hash matches any key in the hashDict then matches is a list of all words with that key, otherwise empty list
 
