@@ -1,5 +1,6 @@
 import string
 import nltk
+import decoder
 from nltk.util import ngrams
 from nltk.corpus import reuters
 from collections import Counter, defaultdict
@@ -16,7 +17,10 @@ def decrypt_caesar_cipher(ciphertext, shift):
             decrypted_text += char
     return decrypted_text
 
+# You need to download reuters and punkt once. If you've already run the script without these two lines commented out, comment them out before you run it again.
 def bigram_model():
+    #nltk.download('reuters')
+    #nltk.download('punkt')
     nltk.download('reuters')
     nltk.download('punkt')
 
@@ -72,4 +76,3 @@ if __name__ == "__main__":
     print(f"Ciphertext: {text}")
     plaintext = frequency_analysis(text)
     print(f"plaintext: {plaintext}")
-    
