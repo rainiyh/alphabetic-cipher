@@ -30,11 +30,6 @@ def test_random_combination(encoded, combination):
 			decoded += ' '
 	return decoded
 	
-def generate_freq_combination():
-	words_list = ''.join(load_words())
-	words_list = words_list.lower()
-	return sort_freq(words_list)
-	
 def generate_encoded_letter_freq():
 	encoded = cracker.load_ciphertext()
 	return sort_freq(encoded)
@@ -53,17 +48,6 @@ def sort_freq(text):
 	sorted_string = ''.join([pair[0] for pair in sorted_letters])
 	
 	return sorted_string
-	
-def moderate_force():
-	permutations_list = list(permutations(generate_freq_combination()))
-	permutations_list = sorted(permutations_list, key=lambda x: items.index(x[0]))
-	
-	for p in permutations_list:
-		decoded = test_combination(encoded, p)
-		if all(word in words_list for word in decoded.split()):
-			print('Decoded text: ' + decoded)
-			print('Combination: ' + combination)
-			break
 
 def bruteforce():
 	encoded = cracker.load_ciphertext()
@@ -104,7 +88,7 @@ def main():
 	end_time = time.time()
 	execution_time = end_time - start_time
 	print(f"Execution time: {execution_time} seconds")
-	#bruteforce()
+	bruteforce()
 
 if (__name__ == "__main__"):
 	main()
