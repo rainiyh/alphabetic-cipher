@@ -87,6 +87,16 @@ def bruteforce():
 				printed_time = time.time()
 				print(f"Seconds elapsed: {print_time}\nCombinations tried: {tested}")
 
+def print_solution(ciphertext, plaintext, items):
+	print(f'Ciphertext: {ciphertext}')
+	print(f'Plaintext: {plaintext}')
+	print('Substitutions:')
+	code = []
+	for key in items.keys():
+		code.append(key + ' -> ' + items[key])
+	for item in sorted(code):
+		print(item)
+
 # Do the decoding here
 def main():
 	start_time = time.time()

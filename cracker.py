@@ -1,6 +1,7 @@
 import re
+import decoder
 
-def codeWord(word):
+def hashWord(word):
 
     #Translates a word into numbers (starting with 0) where each number uniquely represents a letter in the given word
     #For example: ABC would become 012 - 0 was assigned to 'A', 1 to 'B' and 2 to 'C'
@@ -14,19 +15,25 @@ def codeWord(word):
 
     #KRUTARTH becomes 01234135 --- 0 = K | 1 = R | 2 = U | 3 = T | 4 = A | 1 = R (again) | 3 = T (again) | 5 = H
 
-    exists = {}
+    hashed = {}
     out = []
     count = 0
 
-    for ch in word:
-        if ch not in exists:
-            exists[ch] = str(count)
+    for char in word:
+        if char not in hashed:
+            hashed[char] = str(count)
             count += 1
-        out.append(exists[ch])
+        out.append(hashed[char])
     return ''.join(out)
 
-class wordDict(object):
 
+class Solver(object):
+
+    def __init__(self, ciphertext):
+        self.hashDict = self.load_hashed_words()
+        self.translation = {}
+        self.ciphertext = ciphertext.upper()
+        
     #Initializes a dictionary where the keys are the hashedWords from the above method and the values are lists containing words that can match that key
     #The words in this dictionary come from 'words.txt' which contains a list of 40000+ words
 
@@ -34,61 +41,32 @@ class wordDict(object):
     #In python dictionary notation, it looks like: {'012' : ['bat', 'cat', 'hat', 'mat', 'pat', 'let']}
 
     #This is eventually used to match the ciphertext hashes to potential words
-
-    def __init__(self):
-
+        
+    def load_hashed_words(self):
         wordsList = open('words2.txt').read().splitlines()
 
-        self.hashDict = {}
+        hashDict = {}
 
         for word in wordsList:
-            hashedWord = codeWord(word)
+            hashedWord = hashWord(word)
 
-            if hashedWord not in self.hashDict:
-                self.hashDict[hashedWord] = [word]
-            else:
-                self.hashDict[hashedWord].append(word)
-
-    def findPotentialWords(self, cipherWord):
-
-        hashedCipherWord = codeWord(cipherWord)
-
-        matches = self.hashDict.get(hashedCipherWord) or [] #if the hash matches any key in the hashDict then matches is a list of all words with that key, otherwise empty list
-
-        potentialWords = []
-
-        for word in matches:
-            invalid = False
-
-            for i in range(len(word)):
-                if (cipherWord[i].islower() or cipherWord[i] == "'" or word[i] == "'") and (cipherWord[i] != word[i]):
-                    invalid = True
-                    break
-            if not invalid:
-                potentialWords.append(word)
-
-        return potentialWords
-
-
-class Solver(object):
-
-    def __init__(self, ciphertext):
-
-        self.wordsFile = wordDict()
-        self.translation = {}
-        self.ciphertext = ciphertext.upper()
+            if hashedWord not in hashDict:
+                hashDict[hashedWord] = [word]
+                continue
+            hashDict[hashedWord].append(word)
+        return hashDict
 
     def solve(self):
 
-        words = re.sub(r'[^\w ]+', '', self.ciphertext).split()
+        words = self.ciphertext.split()
         words.sort(key=lambda word: -len(word))
 
-        solution = self.recursiveSolver(words, {}, 0, 0)
+        solution = self.recursiveSolve(words, {}, 0)
 
         if solution:
             self.translation = solution
 
-    def recursiveSolver(self, remainWords, currTrans, unkWordCount, maxUnkWordCount):
+    def recursiveSolve(self, remainWords, currTrans, unkWordCount):
 
         trans = self.makeTranslations(currTrans)
 
@@ -97,7 +75,24 @@ class Solver(object):
 
         cipherWord = remainWords[0]
 
-        potential = self.wordsFile.findPotentialWords(cipherWord.translate(trans))
+        testWord = cipherWord.translate(trans)
+        
+        hashedCipherWord = hashWord(testWord)
+        potentialWords = []
+
+	#if the hash matches any key in the hashDict then we check a list of all words with that key, otherwise empty list
+        if (hashedCipherWord in self.hashDict):
+            for word in (self.hashDict[hashedCipherWord]):
+                valid = True
+
+                for i in range(len(word)):
+                    if (testWord[i].islower() or testWord[i] == "'" or word[i] == "'") and (testWord[i] != word[i]):
+                        valid = False
+                        break
+                if valid:
+                    potentialWords.append(word)
+
+        potential = potentialWords
 
         for p in potential:
             newTrans = dict(currTrans)
@@ -116,7 +111,7 @@ class Solver(object):
             if badTrans:
                 continue
 
-            res = self.recursiveSolver(remainWords[1:], newTrans, unkWordCount, maxUnkWordCount)
+            res = self.recursiveSolve(remainWords[1:], newTrans, unkWordCount)
 
             if res:
                 return res
@@ -133,19 +128,11 @@ class Solver(object):
             toStr += translations[key]
 
         return str.maketrans(fromStr, toStr)
-
-    def printSol(self):
-        plaintext = self.ciphertext.translate(Solver.makeTranslations(self.translation))
-        print(f'Ciphertext: {self.ciphertext}')
-        print(f'Plaintext: {plaintext}')
-        print('Substitutions:')
-        items = [key + ' -> ' + word for key, word in self.translation.items()]
-        items.sort()
-        for item in items:
-            print(item)
         
 def load_ciphertext():
-	return open('ciphertext.txt').read().strip()
+	text = open('ciphertext.txt').read().strip()
+	text = re.sub(r'[^\w ]+', '', text)
+	return text
 
 def main():
     ciphertext = load_ciphertext()
@@ -154,7 +141,8 @@ def main():
     if not solver.translation:
     	print("Failed to find a solution")
     else:
-    	solver.printSol()
+        plaintext = solver.ciphertext.translate(Solver.makeTranslations(solver.translation))
+        decoder.print_solution(ciphertext, plaintext, solver.translation)
 
 if (__name__ == "__main__"):
 	main()
