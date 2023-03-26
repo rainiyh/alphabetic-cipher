@@ -1,20 +1,46 @@
 import re
 import decoder
+    
+#Initializes a dictionary where the keys are the hashedWords from the above method and the values are lists containing words that can match that key
+#The words in this dictionary come from 'words.txt' which contains a list of 40000+ words
+#For example if the key is 012 its values would be words like: cat, bat, hat, mat, pat, rat etc.
+#In python dictionary notation, it looks like: {'012' : ['bat', 'cat', 'hat', 'mat', 'pat', 'let']}
+
+#This is eventually used to match the ciphertext hashes to potential words
+       
+def load_hashed_words():
+    wordsList = open('words2.txt').read().splitlines()
+    hashDict = {}
+
+    for word in wordsList:
+        hashedWord = hashWord(word)
+
+        if hashedWord not in hashDict:
+            hashDict[hashedWord] = [word]
+            continue
+        hashDict[hashedWord].append(word)
+    return hashDict
+
+# Load the cipher text from file, strip out non-alphanumeric characters
+        
+def load_ciphertext():
+	text = open('ciphertext.txt').read().strip()
+	text = re.sub(r'[^\w ]+', '', text)
+	return text
+	
+#Translates a word into numbers (starting with 0) where each number uniquely represents a letter in the given word
+#For example: ABC would become 012 - 0 was assigned to 'A', 1 to 'B' and 2 to 'C'
+#Therefore ABCA would become 0120 - since the 'A' at index 0 already exists in the dictionary by the time the program looks at the 'A'
+#at index 3, the second 'A' is assigned the same number as the previous 'A'
+
+#some more examples:
+#ABCD becomes 0123 --- 0 = A | 1 = B | 2 = C | 3 = D
+    
+#ELEPHANT becomes 01023456 --- 0 = E | 1 = L | 0 = E (again) | 2 = P | 3 = H | 4 = A | 5 = N | 6 = T
+
+#KRUTARTH becomes 01234135 --- 0 = K | 1 = R | 2 = U | 3 = T | 4 = A | 1 = R (again) | 3 = T (again) | 5 = H
 
 def hashWord(word):
-
-    #Translates a word into numbers (starting with 0) where each number uniquely represents a letter in the given word
-    #For example: ABC would become 012 - 0 was assigned to 'A', 1 to 'B' and 2 to 'C'
-    #Therefore ABCA would become 0120 - since the 'A' at index 0 already exists in the dictionary by the time the program looks at the 'A'
-    #at index 3, the second 'A' is assigned the same number as the previous 'A'
-
-    #some more examples:
-    #ABCD becomes 0123 --- 0 = A | 1 = B | 2 = C | 3 = D
-    
-    #ELEPHANT becomes 01023456 --- 0 = E | 1 = L | 0 = E (again) | 2 = P | 3 = H | 4 = A | 5 = N | 6 = T
-
-    #KRUTARTH becomes 01234135 --- 0 = K | 1 = R | 2 = U | 3 = T | 4 = A | 1 = R (again) | 3 = T (again) | 5 = H
-
     hashed = {}
     out = []
     count = 0
@@ -25,124 +51,83 @@ def hashWord(word):
             count += 1
         out.append(hashed[char])
     return ''.join(out)
+    
+#This is a helper function to create a python translation mapping table from a dictionary of key-value pairs in order to translate the encrypted word.
 
+def makeTranslations(translations):
+    fromStr = ''
+    toStr = ''
 
-class Solver(object):
+    for key in translations:
+        fromStr += key
+        toStr += translations[key]
 
-    def __init__(self, ciphertext):
-        self.hashDict = self.load_hashed_words()
-        self.translation = {}
-        self.ciphertext = ciphertext.upper()
-        
-    #Initializes a dictionary where the keys are the hashedWords from the above method and the values are lists containing words that can match that key
-    #The words in this dictionary come from 'words.txt' which contains a list of 40000+ words
+    return str.maketrans(fromStr, toStr)
+    
+# The recursive solver algorithm. Documented in the reports.
 
-    #For example if the key is 012 its values would be words like: cat, bat, hat, mat, pat, rat etc.
-    #In python dictionary notation, it looks like: {'012' : ['bat', 'cat', 'hat', 'mat', 'pat', 'let']}
+def solve(remainWords, currTrans, unkWordCount, hashDict):
+    trans = makeTranslations(currTrans)
 
-    #This is eventually used to match the ciphertext hashes to potential words
-        
-    def load_hashed_words(self):
-        wordsList = open('words2.txt').read().splitlines()
+    if len(remainWords) == 0:
+        return currTrans
 
-        hashDict = {}
+    cipherWord = remainWords[0]
 
-        for word in wordsList:
-            hashedWord = hashWord(word)
+    testWord = cipherWord.translate(trans)
+      
+    hashedCipherWord = hashWord(testWord)
+    potentialWords = []
 
-            if hashedWord not in hashDict:
-                hashDict[hashedWord] = [word]
-                continue
-            hashDict[hashedWord].append(word)
-        return hashDict
+    #if the hash matches any key in the hashDict then we check a list of all words with that key, otherwise empty list
+    if (hashedCipherWord in hashDict):
+        for word in (hashDict[hashedCipherWord]):
+            valid = True
 
-    def solve(self):
-
-        words = self.ciphertext.split()
-        words.sort(key=lambda word: -len(word))
-
-        solution = self.recursiveSolve(words, {}, 0)
-
-        if solution:
-            self.translation = solution
-
-    def recursiveSolve(self, remainWords, currTrans, unkWordCount):
-
-        trans = self.makeTranslations(currTrans)
-
-        if len(remainWords) == 0:
-            return currTrans
-
-        cipherWord = remainWords[0]
-
-        testWord = cipherWord.translate(trans)
-        
-        hashedCipherWord = hashWord(testWord)
-        potentialWords = []
-
-	#if the hash matches any key in the hashDict then we check a list of all words with that key, otherwise empty list
-        if (hashedCipherWord in self.hashDict):
-            for word in (self.hashDict[hashedCipherWord]):
-                valid = True
-
-                for i in range(len(word)):
-                    if (testWord[i].islower() or testWord[i] == "'" or word[i] == "'") and (testWord[i] != word[i]):
-                        valid = False
-                        break
-                if valid:
-                    potentialWords.append(word)
-
-        potential = potentialWords
-
-        for p in potential:
-            newTrans = dict(currTrans)
-            translatedPlainChars = set(currTrans.values())
-            badTrans = False
-
-            for i in range(len(p)):
-                cipherChar = cipherWord[i]
-                plainChar = p[i]
-
-                if ((cipherChar not in currTrans) and (plainChar in translatedPlainChars)):
-                    badTrans = True
+            for i in range(len(word)):
+                if (testWord[i].islower() or testWord[i] == "'" or word[i] == "'") and (testWord[i] != word[i]):
+                    valid = False
                     break
-                newTrans[cipherWord[i]] = p[i]
+            if valid:
+                potentialWords.append(word)
 
-            if badTrans:
-                continue
+    potential = potentialWords
 
-            res = self.recursiveSolve(remainWords[1:], newTrans, unkWordCount)
+    for p in potential:
+        newTrans = dict(currTrans)
+        translatedPlainChars = set(currTrans.values())
+        badTrans = False
 
-            if res:
-                return res
+        for i in range(len(p)):
+            cipherChar = cipherWord[i]
+            plainChar = p[i]
 
-        return None
+            if ((cipherChar not in currTrans) and (plainChar in translatedPlainChars)):
+                badTrans = True
+                break
+            newTrans[cipherWord[i]] = p[i]
 
-    @staticmethod
-    def makeTranslations(translations):
-        fromStr = ''
-        toStr = ''
+        if badTrans:
+            continue
 
-        for key in translations:
-            fromStr += key
-            toStr += translations[key]
+        res = solve(remainWords[1:], newTrans, unkWordCount, hashDict)
 
-        return str.maketrans(fromStr, toStr)
-        
-def load_ciphertext():
-	text = open('ciphertext.txt').read().strip()
-	text = re.sub(r'[^\w ]+', '', text)
-	return text
+        if res:
+            return res
+
+    return None
 
 def main():
-    ciphertext = load_ciphertext()
-    solver = Solver(ciphertext)
-    solver.solve()
-    if not solver.translation:
+    ciphertext = load_ciphertext().upper()
+    words = sorted(ciphertext.split(), key=lambda word: -len(word))
+    hashDict = load_hashed_words()
+    solution = solve(words, {}, 0, hashDict)
+    
+    if not solution:
     	print("Failed to find a solution")
     else:
-        plaintext = solver.ciphertext.translate(Solver.makeTranslations(solver.translation))
-        decoder.print_solution(ciphertext, plaintext, solver.translation)
+        plaintext = ciphertext.translate(makeTranslations(solution))
+        decoder.print_solution(ciphertext, plaintext, solution)
 
 if (__name__ == "__main__"):
 	main()
