@@ -3,9 +3,12 @@ import random
 
 # USAGE: python3 encoder.py "some silly message that will be displayed encoded then decoded"
 
+class Alphabet:
+	value = 'abcdefghijklmnopqrstuvwxyz'
+
 # Generates an alphabetic cipher. Each letter in the alphabet is mapped to another unique letter.
 def generate_code():
-	alphabet = 'abcdefghijklmnopqrstuvwxyz'
+	alphabet = Alphabet.value
 	cipher_key = ''.join(random.sample(alphabet, len(alphabet)))
 	cipher_map = dict(zip(alphabet, cipher_key))
 	return cipher_map

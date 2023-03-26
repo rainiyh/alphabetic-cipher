@@ -169,9 +169,13 @@ class Solver(object):
             if i % 5 == 4:
                 print('')
             i += 1
+        print('')
+        
+def load_ciphertext():
+	return open('ciphertext.txt').read().strip()
 
 def main():
-    ciphertext = open('ciphertext.txt').read().strip()
+    ciphertext = load_ciphertext()
 
     solver = Solver(ciphertext)
     solver.solve()
