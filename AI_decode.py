@@ -1,5 +1,6 @@
 import string
 import nltk
+import time
 from nltk.util import ngrams
 from nltk.corpus import reuters
 from collections import Counter, defaultdict
@@ -66,9 +67,16 @@ def frequency_analysis(ciphertext):
             best_shift = shift
 
     return decrypt_cipher(ciphertext, best_shift)
-
-if __name__ == "__main__":
+    
+def main():
+    start_time = time.time()
     ciphertext = "olssv P ht h yviva. Upjl av tlla fvb."
     print(f"Ciphertext: {ciphertext}")
     plaintext = frequency_analysis(ciphertext)
     print(f"Plaintext: {plaintext}")
+    end_time = time.time()
+    execution_time = end_time - start_time
+    print(f"Execution time: {execution_time} seconds")
+
+if __name__ == "__main__":
+    main()

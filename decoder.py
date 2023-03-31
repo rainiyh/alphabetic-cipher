@@ -71,21 +71,26 @@ def bruteforce():
 	tested = 0
 	start_time = time.time()
 	printed_time = start_time
+	print(f'Ciphertext: {encoded}')
 	print("Brute forcing. This could take a while.")
+	success = True
 	while True:
 		combination = generate_random_combination()
 		decoded = test_random_combination(encoded, combination)
-		if all(word in words_list for word in decoded.split()):
-			print('Decoded text: ' + decoded)
-			print('Combination: ' + combination)
-			break
-		else:
-			tested += 1
 		if (tested % 1000 == 0):
 			if (time.time() - printed_time > 5):
 				print_time = time.time() - start_time
 				printed_time = time.time()
 				print(f"Seconds elapsed: {print_time}\nCombinations tried: {tested}")
+		for word in decoded.split():
+			if word not in words_list:
+				success = False
+				tested += 1
+				break
+		if (success):
+			print('Decoded text: ' + decoded)
+			print('Combination: ' + combination)
+			break
 
 def print_solution(ciphertext, plaintext, items):
 	print(f'Ciphertext: {ciphertext}')
@@ -99,12 +104,7 @@ def print_solution(ciphertext, plaintext, items):
 
 # Do the decoding here
 def main():
-	start_time = time.time()
-	crack()
-	end_time = time.time()
-	execution_time = end_time - start_time
-	print(f"Execution time: {execution_time} seconds")
-	#bruteforce()
+	bruteforce()
 
 if (__name__ == "__main__"):
 	main()

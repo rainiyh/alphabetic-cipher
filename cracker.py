@@ -1,5 +1,6 @@
 import re
 import decoder
+import time
     
 #Initializes a dictionary where the keys are the hashedWords from the above method and the values are lists containing words that can match that key
 #The words in this dictionary come from 'words.txt' which contains a list of 40000+ words
@@ -130,4 +131,8 @@ def main():
         decoder.print_solution(ciphertext, plaintext, solution)
 
 if (__name__ == "__main__"):
-	main()
+    start_time = time.time()
+    main()
+    end_time = time.time()
+    execution_time = end_time - start_time
+    print(f"Execution time: {execution_time} seconds")
